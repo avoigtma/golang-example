@@ -12,7 +12,9 @@ import (
 	"strings"
 	"time"
 
-	zipkinpropagation "github.com/openzipkin/zipkin-go/propagation/b3"
+	zipkin "github.com/openzipkin/zipkin-go"
+	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
+	logreporter "github.com/openzipkin/zipkin-go/reporter/log"
 )
 
 // this is plain dummy example code only
@@ -23,10 +25,28 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
+	endpoint, err := zipkin.NewEndpoint("svc3", url)
+	if err != nil {
+		log.Fatalf("unable to create endpoint: %+v\n", err)
+	}
+	reporter := logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags))
+	defer reporter.Close()
+	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
+	if err != nil {
+		log.Fatalf("unable to create tracer: %+v\n", err)
+	}
+	span := zipkin.SpanFromContext(req.Context())
+	span.Tag("custom_key", "some value")
 
-	zipkinpropagation.InjectHTTP(req)
+	//var zclient *zipkinhttp.Client
+	zclient, err := zipkinhttp.NewClient(tracer, zipkinhttp.ClientTrace(true))
+	zctx := zipkin.NewContext(req.Context(), span)
+	req = req.WithContext(zctx)
 
-	res, err := client.Do(req)
+	//zipkinpropagation.InjectHTTP(req)
+
+	//&res, err := client.Do(req)
+	res, err := zclient.DoWithAppSpan(req, "svc-3")
 	if err != nil {
 		log.Fatal(err)
 	}
