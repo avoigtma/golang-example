@@ -11,7 +11,7 @@ import (
 // not intended to be "good" go code :-)
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	//	ctx := r.Context()
 
 	response := os.Getenv("RESPONSE")
 	if len(response) == 0 {

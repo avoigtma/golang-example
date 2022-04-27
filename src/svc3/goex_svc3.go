@@ -46,7 +46,7 @@ func randomOutput() string {
 }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	//ctx := r.Context()
 
 	response := randomOutput()
 
