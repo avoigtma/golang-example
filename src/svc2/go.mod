@@ -3,6 +3,7 @@ module github.com/avoigtma/golang-example
 go 1.16
 
 require (
+	github.com/openzipkin/zipkin-go v0.4.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.31.0 // indirect
 	go.opentelemetry.io/otel v1.6.3
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.6.3

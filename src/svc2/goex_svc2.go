@@ -12,60 +12,20 @@ import (
 	"strings"
 	"time"
 
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
-	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.7.0"
-	"go.opentelemetry.io/otel/trace"
+	zipkinpropagation "github.com/openzipkin/zipkin-go/propagation/b3"
 )
 
 // this is plain dummy example code only
 // not intended to be "good" go code :-)
-
-var tracerProvider *sdktrace.TracerProvider
-
-func initTracer() {
-
-	ctx := context.Background()
-
-	client := otlptracehttp.NewClient()
-
-	otlpTraceExporter, err := otlptrace.New(ctx, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	batchSpanProcessor := sdktrace.NewBatchSpanProcessor(otlpTraceExporter)
-	// The service.name attribute is required.
-	resource :=
-		resource.NewWithAttributes(
-			semconv.SchemaURL,
-			semconv.ServiceNameKey.String("Service-2"),
-		)
-
-	tracerProvider := sdktrace.NewTracerProvider(
-		sdktrace.WithSpanProcessor(batchSpanProcessor),
-		//trace.WithSampler(sdktrace.AlwaysSample()), - please check TracerProvider.WithSampler() implementation for details.
-		sdktrace.WithResource(resource),
-	)
-
-	otel.SetTracerProvider(tracerProvider)
-	otel.SetTextMapPropagator(
-		propagation.NewCompositeTextMapPropagator(
-			propagation.TraceContext{},
-			propagation.Baggage{},
-		),
-	)
-}
 
 func readURL(client http.Client, ctx context.Context, url string) string {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	zipkinpropagation.InjectHTTP(req)
+
 	res, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
@@ -128,16 +88,6 @@ func randomOutput(ctx context.Context, url string) string {
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	tracer := otel.GetTracerProvider().Tracer("goex/svc2")
-
-	var span trace.Span
-	ctx, span = tracer.Start(ctx, "svc2")
-	// span := trace.SpanFromContext(ctx)
-	defer span.End()
-
-	otel.GetTextMapPropagator().Inject(ctx, propagation.HeaderCarrier(r.Header))
-	// otel instrumentation
-
 	svc3url := os.Getenv("SERVICE3_URL")
 	response := ""
 	if len(response) == 0 {
@@ -157,7 +107,6 @@ func listenAndServe(port string) {
 }
 
 func main() {
-	initTracer()
 	http.HandleFunc("/", helloHandler)
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
