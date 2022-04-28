@@ -14,6 +14,7 @@ import (
 
 	zipkin "github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
+	zipkinpropagation "github.com/openzipkin/zipkin-go/propagation/b3"
 	logreporter "github.com/openzipkin/zipkin-go/reporter/log"
 )
 
@@ -43,7 +44,7 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 	zctx := zipkin.NewContext(req.Context(), span)
 	req = req.WithContext(zctx)
 
-	//zipkinpropagation.InjectHTTP(req)
+	zipkinpropagation.InjectHTTP(req)
 
 	//&res, err := client.Do(req)
 	res, err := zclient.DoWithAppSpan(req, "svc-3")
