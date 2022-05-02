@@ -21,7 +21,22 @@ import (
 // this is plain dummy example code only
 // not intended to be "good" go code :-)
 
-func readURL(client http.Client, ctx context.Context, url string) string {
+func propagateHeaders(srcreq *http.Request, dstreq *http.Request) {
+	headers := []string{
+		"x-request-id",
+		"x-b3-traceid",
+		"x-b3-spanid",
+		"x-b3-parentspanid",
+		"x-b3-sampled",
+		"x-b3-flags",
+		"x-ot-span-context",
+	}
+	for _, header := range headers {
+		dstreq.Header.Add(header, srcreq.Header.Get(header))
+	}
+}
+
+func readURL(client http.Client, inreq *http.Request, ctx context.Context, url string) string {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -49,6 +64,7 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 
 	zipkinpropagation.InjectHTTP(req)
 
+	propagateHeaders(inreq, req)
 	//&res, err := client.Do(req)
 	res, err := zclient.DoWithAppSpan(req, "svc-2")
 	if err != nil {
@@ -65,7 +81,7 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 
 }
 
-func randomOutput(ctx context.Context, url string) string {
+func randomOutput(r *http.Request, ctx context.Context, url string) string {
 	const maxIterations int = 10
 
 	rand.Seed(time.Now().UnixNano())
@@ -98,7 +114,7 @@ func randomOutput(ctx context.Context, url string) string {
 			sb.WriteString("Result from Service-3, iteration #")
 			sb.WriteString(strconv.Itoa(i))
 			sb.WriteString(":\n")
-			sb.WriteString(readURL(client, ctx, url))
+			sb.WriteString(readURL(client, r, ctx, url))
 			sb.WriteString("\n\n\n")
 		}
 
@@ -116,7 +132,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 	svc3url := os.Getenv("SERVICE3_URL")
 	response := ""
 	if len(response) == 0 {
-		response = randomOutput(ctx, svc3url)
+		response = randomOutput(r, ctx, svc3url)
 	}
 
 	fmt.Fprintln(w, response)
