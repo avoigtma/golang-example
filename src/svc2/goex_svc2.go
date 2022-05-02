@@ -15,6 +15,7 @@ import (
 	zipkin "github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
 	zipkinpropagation "github.com/openzipkin/zipkin-go/propagation/b3"
+	zipkinreporter "github.com/openzipkin/zipkin-go/reporter"
 )
 
 // this is plain dummy example code only
