@@ -110,6 +110,7 @@ func randomOutput(ctx context.Context, url string) string {
 }
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
+	zipkinpropagation.ExtractHTTP(r)
 	ctx := r.Context()
 
 	svc3url := os.Getenv("SERVICE3_URL")
