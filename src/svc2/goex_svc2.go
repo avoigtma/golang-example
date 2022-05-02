@@ -45,7 +45,7 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 	//var zclient *zipkinhttp.Client
 	zclient, err := zipkinhttp.NewClient(tracer, zipkinhttp.ClientTrace(true))
 	zctx := zipkin.NewContext(req.Context(), span)
-	//req = req.WithContext(zctx)
+	req = req.WithContext(zctx)
 
 	zipkinpropagation.InjectHTTP(req)
 
