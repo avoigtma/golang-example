@@ -12,7 +12,7 @@ import (
 	zipkin "github.com/openzipkin/zipkin-go"
 	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
 	zipkinpropagation "github.com/openzipkin/zipkin-go/propagation/b3"
-	logreporter "github.com/openzipkin/zipkin-go/reporter/log"
+	zipkinreporter "github.com/openzipkin/zipkin-go/reporter"
 )
 
 // this is plain dummy example code only
@@ -23,13 +23,16 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	endpoint, err := zipkin.NewEndpoint("main", url)
-	if err != nil {
-		log.Fatalf("unable to create endpoint: %+v\n", err)
-	}
-	reporter := logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags))
+	// endpoint, err := zipkin.NewEndpoint("main", url)
+	// if err != nil {
+	// 	log.Fatalf("unable to create endpoint: %+v\n", err)
+	// }
+	// reporter := logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags))
+	// defer reporter.Close()
+	reporter := zipkinreporter.NewNoopReporter()
 	defer reporter.Close()
-	tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
+	// tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
+	tracer, err := zipkin.NewTracer(reporter)
 	if err != nil {
 		log.Fatalf("unable to create tracer: %+v\n", err)
 	}
