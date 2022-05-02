@@ -26,7 +26,7 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 	if err != nil {
 		log.Fatal(err)
 	}
-	endpoint, err := zipkin.NewEndpoint("svc3", url)
+	endpoint, err := zipkin.NewEndpoint("svc2", url)
 	if err != nil {
 		log.Fatalf("unable to create endpoint: %+v\n", err)
 	}
@@ -37,7 +37,7 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 		log.Fatalf("unable to create tracer: %+v\n", err)
 	}
 	span := zipkin.SpanFromContext(req.Context())
-	span.Tag("custom_key", "some value")
+	//span.Tag("custom_key", "some value")
 
 	//var zclient *zipkinhttp.Client
 	zclient, err := zipkinhttp.NewClient(tracer, zipkinhttp.ClientTrace(true))
@@ -47,7 +47,7 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 	zipkinpropagation.InjectHTTP(req)
 
 	//&res, err := client.Do(req)
-	res, err := zclient.DoWithAppSpan(req, "svc-3")
+	res, err := zclient.DoWithAppSpan(req, "svc-2")
 	if err != nil {
 		log.Fatal(err)
 	}
