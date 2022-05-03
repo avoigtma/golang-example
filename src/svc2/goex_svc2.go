@@ -34,7 +34,7 @@ func propagateHeaders(srcreq *http.Request, dstreq *http.Request) {
 	for _, header := range headers {
 		dstreq.Header.Add(header, srcreq.Header.Get(header))
 		// debug
-		hval := srcreq.Header.Get(header)clear
+		hval := srcreq.Header.Get(header)
 		log.Printf("Got header %v (%v) - adding to new request.", header, hval)
 		// debug
 	}

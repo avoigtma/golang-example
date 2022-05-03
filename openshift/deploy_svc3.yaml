@@ -27,17 +27,6 @@ spec:
     spec:
       containers:
         - name: golang-sample-svc3
-          env:
-            - name: JAEGER_SERVICE_NAME
-              value: golang-sample-svc3.a-goex
-            - name: JAEGER_PROPAGATION
-              value: 'jaeger,b3,w3c'
-            - name: JAEGER_ENDPOINT
-              value: 'http://jaeger-collector.istio-system.svc:14268/api/traces'
-            - name: OTELCOL_SERVER
-              value: 'http://my-otelcol-collector:4317'
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: 'http://my-otelcol-collector:4318'
           image: image-registry.openshift-image-registry.svc:5000/a-goex/golang-sample-svc3
           resources: {}
           terminationMessagePath: /dev/termination-log
