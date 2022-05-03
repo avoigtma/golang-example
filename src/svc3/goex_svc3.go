@@ -14,7 +14,7 @@ import (
 // this is plain dummy example code only
 // not intended to be "good" go code :-)
 
-func dumpHeaders(srcreq *http.Request) {
+func dumpHeaders(r *http.Request) {
 	headers := []string{
 		"x-request-id",
 		"x-b3-traceid",
@@ -25,10 +25,10 @@ func dumpHeaders(srcreq *http.Request) {
 		"x-ot-span-context",
 	}
 	for _, header := range headers {
-		// debug
-		hval := srcreq.Header.Get(header)
-		log.Printf("Got header %v (%v)", header, hval)
-		// debug
+		// debug output
+		headerval := r.Header.Get(header)
+		log.Printf("Got header %v (%v)", header, headerval)
+		// debug output
 	}
 }
 
@@ -49,11 +49,14 @@ func randomOutput() string {
 		maxSleep := 100
 		randSleep := rand.Intn(maxSleep-minSleep+1) + minSleep
 		log.Printf("Iteration %d: Sleeping %d seconds, then adding next string fragment to output\n", i, randSleep)
-		time.Sleep(time.Duration(randSleep) * time.Millisecond)
+		timeSleep := time.Duration(randSleep) * time.Millisecond
+		time.Sleep(timeSleep)
 
 		sb.WriteString("- ")
 		sb.WriteString(strconv.Itoa(i))
-		sb.WriteString(" - ")
+		sb.WriteString(" - (sleep delay: ")
+		sb.WriteString(strconv.FormatInt(int64(timeSleep), 10))
+		sb.WriteString("ms) - ")
 		sb.WriteString(outputPart)
 		sb.WriteString(" | ")
 	}
@@ -63,10 +66,11 @@ func randomOutput() string {
 	return result
 }
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	//ctx := r.Context()
-
+func svc3Handler(w http.ResponseWriter, r *http.Request) {
+	// debug
 	dumpHeaders(r)
+	// debug
+
 	response := randomOutput()
 
 	fmt.Fprintln(w, response)
@@ -82,7 +86,7 @@ func listenAndServe(port string) {
 }
 
 func main() {
-	http.HandleFunc("/", helloHandler)
+	http.HandleFunc("/", svc3Handler)
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
 		port = "8080"

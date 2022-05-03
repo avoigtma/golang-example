@@ -27,19 +27,21 @@ func propagateHeaders(srcreq *http.Request, dstreq *http.Request) {
 		dstreq.Header.Add(header, srcreq.Header.Get(header))
 		// debug
 		hval := srcreq.Header.Get(header)
-		log.Printf("Got header %v (%v) - adding to new request.", header, hval)
+		log.Printf("Got header %v (%v) - adding to outbound request.", header, hval)
 		// debug
 	}
 }
 
-func readURL(client http.Client, inreq *http.Request, ctx context.Context, url string) string {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+func readURL(client http.Client, inreq *http.Request, url string) string {
+	ctx := context.Background()
+
+	outreq, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	propagateHeaders(inreq, req)
+	propagateHeaders(inreq, outreq)
 
-	res, err := client.Do(req)
+	res, err := client.Do(outreq)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -59,25 +61,13 @@ func MainServiceHandler(w http.ResponseWriter, r *http.Request) {
 		Timeout: 60 * time.Second,
 	}
 
-	ctx := context.Background()
-
 	log.Println("Servicing request.")
 
-	responseEnv := os.Getenv("RESPONSE")
 	svc1url := os.Getenv("SERVICE1_URL")
 	svc2url := os.Getenv("SERVICE2_URL")
+
 	response := "Hello Caller!"
 	response += "\n\n\n"
-	if len(responseEnv) == 0 {
-		log.Println("No response value in env configured")
-		response += "No response value in env configured\n"
-	} else {
-		log.Print("Response value in env: ")
-		log.Println(responseEnv)
-		response += responseEnv
-		response += "'"
-		response += "\n\n\n"
-	}
 
 	/// service 1
 	if len(svc1url) == 0 {
@@ -86,8 +76,10 @@ func MainServiceHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Print("Calling service on URL: ")
 		log.Println(svc1url)
+		response += "\n---------------------\n"
 		response += "Result from Service-1:\n"
-		response += readURL(client, r, ctx, svc1url)
+		response += readURL(client, r, svc1url)
+		response += "\n---------------------\n"
 		response += "\n\n\n"
 	}
 
@@ -98,8 +90,10 @@ func MainServiceHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Print("Calling service on URL: ")
 		log.Println(svc2url)
+		response += "\n---------------------\n"
 		response += "Result from Service-2:\n"
-		response += readURL(client, r, ctx, svc2url)
+		response += readURL(client, r, svc2url)
+		response += "\n---------------------\n"
 	}
 
 	fmt.Fprintln(w, response)

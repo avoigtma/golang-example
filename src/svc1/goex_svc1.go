@@ -9,7 +9,7 @@ import (
 
 // this is plain dummy example code only
 // not intended to be "good" go code :-)
-func dumpHeaders(srcreq *http.Request) {
+func dumpHeaders(r *http.Request) {
 	headers := []string{
 		"x-request-id",
 		"x-b3-traceid",
@@ -20,14 +20,14 @@ func dumpHeaders(srcreq *http.Request) {
 		"x-ot-span-context",
 	}
 	for _, header := range headers {
-		// debug
-		hval := srcreq.Header.Get(header)
-		log.Printf("Got header %v (%v)", header, hval)
-		// debug
+		// debug output
+		headerval := r.Header.Get(header)
+		log.Printf("Got header %v (%v)", header, headerval)
+		// debug output
 	}
 }
 
-func helloHandler(w http.ResponseWriter, r *http.Request) {
+func svc1Handler(w http.ResponseWriter, r *http.Request) {
 	//	ctx := r.Context()
 	dumpHeaders(r)
 
@@ -49,7 +49,7 @@ func listenAndServe(port string) {
 }
 
 func main() {
-	http.HandleFunc("/", helloHandler)
+	http.HandleFunc("/", svc1Handler)
 	port := os.Getenv("PORT")
 	if len(port) == 0 {
 		port = "8080"
