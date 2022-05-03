@@ -18,7 +18,26 @@ import (
 // this is plain dummy example code only
 // not intended to be "good" go code :-)
 
-func readURL(client http.Client, ctx context.Context, url string) string {
+func propagateHeaders(srcreq *http.Request, dstreq *http.Request) {
+	headers := []string{
+		"x-request-id",
+		"x-b3-traceid",
+		"x-b3-spanid",
+		"x-b3-parentspanid",
+		"x-b3-sampled",
+		"x-b3-flags",
+		"x-ot-span-context",
+	}
+	for _, header := range headers {
+		dstreq.Header.Add(header, srcreq.Header.Get(header))
+		// debug
+		hval := srcreq.Header.Get(header)
+		log.Printf("Got header %v (%v) - adding to new request.", header, hval)
+		// debug
+	}
+}
+
+func readURL(client http.Client, inreq *http.Request, ctx context.Context, url string) string {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -47,6 +66,8 @@ func readURL(client http.Client, ctx context.Context, url string) string {
 	zipkinpropagation.InjectHTTP(req)
 
 	//	res, err := client.Do(req)
+	propagateHeaders(inreq, req)
+
 	res, err := zclient.DoWithAppSpan(req, "main")
 	if err != nil {
 		log.Fatal(err)
@@ -99,7 +120,7 @@ func MainServiceHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print("Calling service on URL: ")
 		log.Println(svc1url)
 		response += "Result from Service-1:\n"
-		response += readURL(client, ctx, svc1url)
+		response += readURL(client, r, ctx, svc1url)
 		response += "\n\n\n"
 	}
 
@@ -111,7 +132,7 @@ func MainServiceHandler(w http.ResponseWriter, r *http.Request) {
 		log.Print("Calling service on URL: ")
 		log.Println(svc2url)
 		response += "Result from Service-2:\n"
-		response += readURL(client, ctx, svc2url)
+		response += readURL(client, r, ctx, svc2url)
 	}
 
 	fmt.Fprintln(w, response)
