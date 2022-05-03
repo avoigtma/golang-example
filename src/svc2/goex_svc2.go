@@ -33,6 +33,10 @@ func propagateHeaders(srcreq *http.Request, dstreq *http.Request) {
 	}
 	for _, header := range headers {
 		dstreq.Header.Add(header, srcreq.Header.Get(header))
+		// debug
+		hval := srcreq.Header.Get(header)clear
+		log.Printf("Got header %v (%v) - adding to new request.", header, hval)
+		// debug
 	}
 }
 
@@ -77,6 +81,8 @@ func readURL(client http.Client, inreq *http.Request, ctx context.Context, url s
 	}
 	strBody := string(body)
 	log.Println(strBody)
+
+	span.Finish()
 	return strBody
 
 }

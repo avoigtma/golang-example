@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	zipkin "github.com/openzipkin/zipkin-go"
 )
 
 // this is plain dummy example code only
@@ -47,11 +49,14 @@ func randomOutput() string {
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	//ctx := r.Context()
+	span := zipkin.SpanFromContext(req.Context())
 
 	response := randomOutput()
 
 	fmt.Fprintln(w, response)
 	log.Println("Servicing request.")
+
+	span.Finish()
 }
 
 func listenAndServe(port string) {
