@@ -82,7 +82,7 @@ func readURL(client http.Client, inreq *http.Request, ctx context.Context, url s
 	strBody := string(body)
 	log.Println(strBody)
 
-	span.Finish()
+	//span.Finish()
 	return strBody
 
 }
