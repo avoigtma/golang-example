@@ -49,7 +49,7 @@ func randomOutput() string {
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	//ctx := r.Context()
-	span := zipkin.SpanFromContext(req.Context())
+	span := zipkin.SpanFromContext(r.Context())
 
 	response := randomOutput()
 
