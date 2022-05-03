@@ -22,7 +22,7 @@ func dumpHeaders(srcreq *http.Request) {
 	for _, header := range headers {
 		// debug
 		hval := srcreq.Header.Get(header)
-		log.Printf("Got header %v (%v) - adding to new request.", header, hval)
+		log.Printf("Got header %v (%v)", header, hval)
 		// debug
 	}
 }

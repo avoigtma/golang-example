@@ -8,11 +8,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
-	zipkin "github.com/openzipkin/zipkin-go"
-	zipkinhttp "github.com/openzipkin/zipkin-go/middleware/http"
-	zipkinpropagation "github.com/openzipkin/zipkin-go/propagation/b3"
-	zipkinreporter "github.com/openzipkin/zipkin-go/reporter"
 )
 
 // this is plain dummy example code only
@@ -42,33 +37,9 @@ func readURL(client http.Client, inreq *http.Request, ctx context.Context, url s
 	if err != nil {
 		log.Fatal(err)
 	}
-	// endpoint, err := zipkin.NewEndpoint("main", url)
-	// if err != nil {
-	// 	log.Fatalf("unable to create endpoint: %+v\n", err)
-	// }
-	// reporter := logreporter.NewReporter(log.New(os.Stderr, "", log.LstdFlags))
-	// defer reporter.Close()
-	reporter := zipkinreporter.NewNoopReporter()
-	defer reporter.Close()
-	// tracer, err := zipkin.NewTracer(reporter, zipkin.WithLocalEndpoint(endpoint))
-	tracer, err := zipkin.NewTracer(reporter)
-	if err != nil {
-		log.Fatalf("unable to create tracer: %+v\n", err)
-	}
-	span := zipkin.SpanFromContext(req.Context())
-	//span.Tag("custom_key", "some value")
-
-	//var zclient *zipkinhttp.Client
-	zclient, err := zipkinhttp.NewClient(tracer, zipkinhttp.ClientTrace(true))
-	zctx := zipkin.NewContext(req.Context(), span)
-	req = req.WithContext(zctx)
-
-	zipkinpropagation.InjectHTTP(req)
-
-	//	res, err := client.Do(req)
 	propagateHeaders(inreq, req)
 
-	res, err := zclient.DoWithAppSpan(req, "main")
+	res, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,15 +55,11 @@ func readURL(client http.Client, inreq *http.Request, ctx context.Context, url s
 }
 
 func MainServiceHandler(w http.ResponseWriter, r *http.Request) {
-	// otel instrumentation
 	client := http.Client{
 		Timeout: 60 * time.Second,
 	}
 
 	ctx := context.Background()
-	// zipkin
-	zipkinpropagation.ExtractHTTP(r)
-	// zipkin
 
 	log.Println("Servicing request.")
 

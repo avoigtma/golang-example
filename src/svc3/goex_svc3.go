@@ -27,7 +27,7 @@ func dumpHeaders(srcreq *http.Request) {
 	for _, header := range headers {
 		// debug
 		hval := srcreq.Header.Get(header)
-		log.Printf("Got header %v (%v) - adding to new request.", header, hval)
+		log.Printf("Got header %v (%v)", header, hval)
 		// debug
 	}
 }
@@ -65,15 +65,12 @@ func randomOutput() string {
 
 func helloHandler(w http.ResponseWriter, r *http.Request) {
 	//ctx := r.Context()
-	//span := zipkin.SpanFromContext(r.Context())
 
 	dumpHeaders(r)
 	response := randomOutput()
 
 	fmt.Fprintln(w, response)
 	log.Println("Servicing request.")
-
-	//span.Finish()
 }
 
 func listenAndServe(port string) {
