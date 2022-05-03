@@ -56,7 +56,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, response)
 	log.Println("Servicing request.")
 
-	span.Finish()
+	//span.Finish()
 }
 
 func listenAndServe(port string) {
