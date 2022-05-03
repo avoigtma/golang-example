@@ -55,7 +55,7 @@ func randomOutput() string {
 		sb.WriteString("- ")
 		sb.WriteString(strconv.Itoa(i))
 		sb.WriteString(" - (sleep delay: ")
-		sb.WriteString(strconv.FormatInt(int64(timeSleep), 10))
+		sb.WriteString(strconv.FormatInt(int64(timeSleep)/1000000, 10))
 		sb.WriteString("ms) - ")
 		sb.WriteString(outputPart)
 		sb.WriteString(" | ")

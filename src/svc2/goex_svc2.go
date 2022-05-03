@@ -82,8 +82,8 @@ func randomOutput(r *http.Request, url string) string {
 		log.Printf("Iteration %d: Sleeping %d milliseconds, then adding next string fragment to output\n", i, randSleep)
 		timeSleep := time.Duration(randSleep) * time.Millisecond
 		time.Sleep(timeSleep)
-		sb.WriteString("Sleeping")
-		sb.WriteString(strconv.FormatInt(int64(timeSleep), 10))
+		sb.WriteString("Sleeping ")
+		sb.WriteString(strconv.FormatInt(int64(timeSleep)/1000000, 10))
 		sb.WriteString(" ms\n")
 
 		/// service 3
